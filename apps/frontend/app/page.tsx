@@ -65,22 +65,17 @@ export default function Home() {
     noOfBattleshipsRemain === 0 && noOfDestroyersRemain === 0;
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-20 gap-16 font-sans sm:p-8 sm:pb-20">
-      <main className="flex flex-col gap-8 row-start-2 sm:items-center">
-        <Button
-          appName="web"
-          className="appearance-none rounded-full h-12 px-5 border border-gray-200 dark:border-gray-800 transition-all cursor-pointer flex items-center justify-center text-base font-medium bg-transparent min-w-[180px] hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          Open alert
-        </Button>
-        <div className="flex flex-row gap-8 items-start justify-center flex-wrap w-full md:flex-col md:items-center md:gap-4">
-          <div className="flex flex-col items-center mt-8 md:mt-4">
-            <h2 className="mb-2 text-2xl text-center">Player Grid</h2>
-            <p className="mb-4 text-gray-600 text-center text-sm">
+    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 sm:p-20 gap-16 font-sans">
+      <main className="flex flex-col gap-8 row-start-2 items-start sm:items-center">
+        <Button appName="web">Open alert</Button>
+        <div className="flex flex-row gap-8 items-start justify-center flex-wrap w-full lg:flex-col lg:items-center lg:gap-4">
+          <div className="flex flex-col items-center mt-8 lg:mt-4">
+            <h2 className="mb-2 text-2xl text-center font-bold">Player Grid</h2>
+            <p className="mb-4 text-gray-600 dark:text-gray-400 text-center text-sm">
               Your ships (click to place/remove)
             </p>
-            <div className="mb-4">
-              <label className="mr-4">
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:gap-4">
+              <label className="flex items-center">
                 <input
                   type="radio"
                   name="shipType"
@@ -91,9 +86,11 @@ export default function Home() {
                   }
                   className="mr-2"
                 />
-                Battleship(len=4) Remaining {noOfBattleshipsRemain}
+                <span className="text-gray-700">
+                  Battleship(len=4) Remaining {noOfBattleshipsRemain}
+                </span>
               </label>
-              <label>
+              <label className="flex items-center">
                 <input
                   type="radio"
                   name="shipType"
@@ -104,26 +101,28 @@ export default function Home() {
                   }
                   className="mr-2"
                 />
-                Destroyer(len=3) Remaining {noOfDestroyersRemain}
+                <span className="text-sm">
+                  Destroyer(len=3) Remaining {noOfDestroyersRemain}
+                </span>
               </label>
             </div>
 
             {!canPlaceShip() && (
-              <div className="text-red-600 mb-4 font-bold">
+              <div className="text-red-600 mb-4 font-bold text-center">
                 No more {selectedShipType}s available to place!
               </div>
             )}
 
             {canPlaceShip() && (
-              <div className="text-green-600 mb-4 font-bold">
+              <div className="text-green-600 mb-4 font-bold text-center">
                 Click on the grid to place a {selectedShipType} (
                 {selectedShipType === "battleship" ? "4" : "3"} cells,{" "}
                 {selectedOrientationType})
               </div>
             )}
 
-            <div className="mb-4">
-              <label className="mr-4">
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:gap-4">
+              <label className="flex items-center">
                 <input
                   type="radio"
                   name="shipOrientation"
@@ -134,9 +133,9 @@ export default function Home() {
                   }
                   className="mr-2"
                 />
-                Vertical
+                <span className="text-sm">Vertical</span>
               </label>
-              <label>
+              <label className="flex items-center">
                 <input
                   type="radio"
                   name="shipOrientation"
@@ -147,14 +146,14 @@ export default function Home() {
                   }
                   className="mr-2"
                 />
-                Horizontal
+                <span className="text-sm">Horizontal</span>
               </label>
             </div>
 
             {allShipsPlaced && (
-              <div className="text-green-600">
-                All ships placed! Ready for battle!
-                <button className="ml-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+              <div className="text-green-600 text-center mb-4">
+                <div className="mb-2">All ships placed! Ready for battle!</div>
+                <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
                   READY
                 </button>
               </div>
@@ -163,11 +162,12 @@ export default function Home() {
             <div className="mb-4">
               <button
                 onClick={resetAllShips}
-                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
               >
                 Reset All Ships
               </button>
             </div>
+
             <Grid
               shipType={canPlaceShip() ? selectedShipType : undefined}
               orientation={selectedOrientationType}
@@ -181,12 +181,14 @@ export default function Home() {
             />
           </div>
 
-          <div className="flex flex-col items-center mt-8 md:mt-4">
-            <h2 className="mb-2 text-2xl text-center">Enemy Grid</h2>
-            <p className="mb-4 text-gray-600 text-center text-sm">
+          <div className="flex flex-col items-center mt-8 lg:mt-4">
+            <h2 className="mb-2 text-2xl text-center font-bold">Enemy Grid</h2>
+            <p className="mb-4 text-gray-600 dark:text-gray-400 text-center text-sm">
               Attack enemy ships (click to target)
             </p>
-            <div className="mb-4 font-bold">Shots fired: {shotsFired}</div>
+            <div className="mb-4 font-bold text-center">
+              Shots fired: {shotsFired}
+            </div>
 
             <Grid
               mode="targeting"
@@ -205,7 +207,9 @@ export default function Home() {
           </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6"></footer>
+      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
+        {/* Footer content can go here */}
+      </footer>
     </div>
   );
 }

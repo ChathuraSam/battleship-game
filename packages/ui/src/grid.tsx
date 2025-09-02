@@ -227,85 +227,59 @@ export const Grid = ({
     }
   };
 
-  const gridStyle = {
-    display: "grid",
-    gridTemplateColumns: `repeat(${size}, 1fr)`,
-    gridTemplateRows: `repeat(${size}, 1fr)`,
-    gap: "1px",
-    width: "400px",
-    height: "400px",
-    border: "2px solid #333",
-    backgroundColor: "#333",
-  };
-
-  const cellStyle = (cell: CellState) => {
-    let backgroundColor = "#f3f4f6"; // Default empty cell color
-    let color = "#6b7280";
+  const getCellClassName = (cell: CellState): string => {
+    let classes =
+      "w-full h-full cursor-pointer flex items-center justify-center text-xs font-bold border";
 
     // Handle targeting mode (enemy grid)
     if (mode === "targeting") {
       if (cell.isTargeted) {
-        backgroundColor = "#fbbf24"; // Yellow for targeted cells
-        color = "#92400e";
+        classes += " bg-yellow-400 text-black border-yellow-600"; // Yellow for targeted
+      } else {
+        classes += " bg-blue-100 text-gray-800 border-gray-400"; // Light blue for untargeted
       }
-      return {
-        backgroundColor,
-        border: "none",
-        cursor: "pointer",
-        transition: "background-color 0.2s ease",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "20px",
-        fontWeight: "bold",
-        color,
-        "&:hover": {
-          opacity: 0.8,
-        },
-      };
+      return classes;
     }
 
     // Handle ship placement mode (player grid)
     if (cell.isSelected) {
       if (cell.shipType === "battleship") {
-        backgroundColor = "#dc2626"; // Red for battleship
-        color = "white";
+        classes += " bg-red-600 text-white border-red-800"; // Red for battleship
       } else if (cell.shipType === "destroyer") {
-        backgroundColor = "#2563eb"; // Blue for destroyer
-        color = "white";
+        classes += " bg-blue-600 text-white border-blue-800"; // Blue for destroyer
       } else {
-        backgroundColor = "#ef4444"; // Default red for selected
-        color = "white";
+        classes += " bg-red-500 text-white border-red-700"; // Default red for selected
       }
+    } else {
+      classes += " bg-gray-100 text-gray-800 border-gray-400"; // Light gray for unselected
     }
 
-    return {
-      backgroundColor,
-      border: "none",
-      cursor: "pointer",
-      transition: "background-color 0.2s ease",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: "12px",
-      fontWeight: "bold",
-      color,
-      "&:hover": {
-        opacity: 0.8,
-      },
-    };
+    return classes;
   };
 
   return (
-    <div className={`grid-container ${className}`}>
-      <div style={gridStyle}>
+    <div className={`inline-block ${className}`}>
+      <div
+        className="grid border-4 border-black bg-gray-800 p-1"
+        style={{
+          gridTemplateColumns: `repeat(${size}, 1fr)`,
+          gridTemplateRows: `repeat(${size}, 1fr)`,
+          width: "320px",
+          height: "320px",
+          gap: "2px",
+        }}
+      >
         {cellStates.map((row, rowIndex) =>
           row.map((cell, colIndex) => (
             <button
               key={`${rowIndex}-${colIndex}`}
-              style={cellStyle(cell)}
+              className={getCellClassName(cell)}
               onClick={() => handleCellClick(rowIndex, colIndex)}
               aria-label={`Cell ${rowIndex + 1}-${colIndex + 1}`}
+              style={{
+                minHeight: "25px",
+                minWidth: "25px",
+              }}
             >
               {mode === "targeting" && cell.isTargeted ? "●" : ""}
             </button>
