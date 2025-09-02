@@ -67,13 +67,18 @@ export default function Home() {
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-20 gap-16 font-sans sm:p-8 sm:pb-20">
       <main className="flex flex-col gap-8 row-start-2 sm:items-center">
-        <Button appName="web" className="appearance-none rounded-full h-12 px-5 border border-gray-200 dark:border-gray-800 transition-all cursor-pointer flex items-center justify-center text-base font-medium bg-transparent min-w-[180px] hover:bg-gray-100 dark:hover:bg-gray-800">
+        <Button
+          appName="web"
+          className="appearance-none rounded-full h-12 px-5 border border-gray-200 dark:border-gray-800 transition-all cursor-pointer flex items-center justify-center text-base font-medium bg-transparent min-w-[180px] hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
           Open alert
         </Button>
         <div className="flex flex-row gap-8 items-start justify-center flex-wrap w-full md:flex-col md:items-center md:gap-4">
           <div className="flex flex-col items-center mt-8 md:mt-4">
             <h2 className="mb-2 text-2xl text-center">Player Grid</h2>
-            <p className="mb-4 text-gray-600 text-center text-sm">Your ships (click to place/remove)</p>
+            <p className="mb-4 text-gray-600 text-center text-sm">
+              Your ships (click to place/remove)
+            </p>
             <div className="mb-4">
               <label className="mr-4">
                 <input
@@ -149,12 +154,14 @@ export default function Home() {
             {allShipsPlaced && (
               <div className="text-green-600">
                 All ships placed! Ready for battle!
-                <button className="ml-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">READY</button>
+                <button className="ml-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                  READY
+                </button>
               </div>
             )}
 
             <div className="mb-4">
-              <button 
+              <button
                 onClick={resetAllShips}
                 className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
               >
@@ -176,10 +183,10 @@ export default function Home() {
 
           <div className="flex flex-col items-center mt-8 md:mt-4">
             <h2 className="mb-2 text-2xl text-center">Enemy Grid</h2>
-            <p className="mb-4 text-gray-600 text-center text-sm">Attack enemy ships (click to target)</p>
-            <div className="mb-4 font-bold">
-              Shots fired: {shotsFired}
-            </div>
+            <p className="mb-4 text-gray-600 text-center text-sm">
+              Attack enemy ships (click to target)
+            </p>
+            <div className="mb-4 font-bold">Shots fired: {shotsFired}</div>
 
             <Grid
               mode="targeting"
