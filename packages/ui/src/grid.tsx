@@ -16,12 +16,14 @@ interface GridProps {
     shipType: string,
     shipCells: Array<{ row: number; col: number }>
   ) => void;
+  mode?: "ship-placement" | "targeting"; // New prop to differentiate grid modes
 }
 
 interface CellState {
   isSelected: boolean;
   shipType?: "battleship" | "destroyer";
   shipId?: string;
+  isTargeted?: boolean; // New property for enemy grid targeting
 }
 
 export const Grid = ({
@@ -32,6 +34,7 @@ export const Grid = ({
   orientation = "horizontal",
   onShipPlacement,
   onShipRemoval,
+  mode = "ship-placement", // Default to ship placement mode
 }: GridProps) => {
   const [cellStates, setCellStates] = useState<CellState[][]>(() =>
     Array(size)
@@ -163,6 +166,27 @@ export const Grid = ({
     const currentCell = cellStates[row]?.[col];
     if (!currentCell) return;
 
+    // Handle targeting mode (enemy grid)
+    if (mode === "targeting") {
+      setCellStates((prevStates) => {
+        const newStates = prevStates.map((rowStates) =>
+          rowStates.map((cell) => ({ ...cell }))
+        );
+        const cell = newStates[row]?.[col];
+        if (!cell) return prevStates;
+
+        // Toggle targeted state
+        cell.isTargeted = !cell.isTargeted;
+        return newStates;
+      });
+
+      if (onCellClick) {
+        onCellClick(row, col, !currentCell.isTargeted);
+      }
+      return;
+    }
+
+    // Handle ship placement mode (player grid)
     // If cell is already selected, remove the ship
     if (currentCell.isSelected) {
       removeShip(row, col);
@@ -218,6 +242,30 @@ export const Grid = ({
     let backgroundColor = "#f3f4f6"; // Default empty cell color
     let color = "#6b7280";
 
+    // Handle targeting mode (enemy grid)
+    if (mode === "targeting") {
+      if (cell.isTargeted) {
+        backgroundColor = "#fbbf24"; // Yellow for targeted cells
+        color = "#92400e";
+      }
+      return {
+        backgroundColor,
+        border: "none",
+        cursor: "pointer",
+        transition: "background-color 0.2s ease",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "20px",
+        fontWeight: "bold",
+        color,
+        "&:hover": {
+          opacity: 0.8,
+        },
+      };
+    }
+
+    // Handle ship placement mode (player grid)
     if (cell.isSelected) {
       if (cell.shipType === "battleship") {
         backgroundColor = "#dc2626"; // Red for battleship
@@ -258,7 +306,9 @@ export const Grid = ({
               style={cellStyle(cell)}
               onClick={() => handleCellClick(rowIndex, colIndex)}
               aria-label={`Cell ${rowIndex + 1}-${colIndex + 1}`}
-            />
+            >
+              {mode === "targeting" && cell.isTargeted ? "●" : ""}
+            </button>
           ))
         )}
       </div>

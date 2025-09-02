@@ -16,6 +16,7 @@ export default function Home() {
 
   const [noOfBattleshipsRemain, setNoOfBattleshipsRemain] = useState<number>(1);
   const [noOfDestroyersRemain, setNoOfDestroyersRemain] = useState<number>(2);
+  const [shotsFired, setShotsFired] = useState<number>(0);
 
   const handleShipPlacement = (
     shipCells: Array<{ row: number; col: number }>,
@@ -56,6 +57,7 @@ export default function Home() {
   const resetAllShips = () => {
     setNoOfBattleshipsRemain(1);
     setNoOfDestroyersRemain(2);
+    setShotsFired(0);
     // Force grid reset by key change would be ideal, but for now this works
     window.location.reload();
   };
@@ -187,12 +189,22 @@ export default function Home() {
           <div className={styles.gridSection}>
             <h2>Enemy Grid</h2>
             <p>Attack enemy ships (click to target)</p>
+            <div style={{ marginBottom: "1rem", fontWeight: "bold" }}>
+              Shots fired: {shotsFired}
+            </div>
 
             <Grid
-              onCellClick={(row, col, isSelected) => {
+              mode="targeting"
+              onCellClick={(row, col, isTargeted) => {
                 console.log(
-                  `Enemy Grid - Cell ${row + 1}-${col + 1} ${isSelected ? "selected" : "deselected"}`
+                  `Enemy Grid - Cell ${row + 1}-${col + 1} ${isTargeted ? "targeted" : "untargeted"}`
                 );
+                // Update shots counter
+                if (isTargeted) {
+                  setShotsFired((prev) => prev + 1);
+                } else {
+                  setShotsFired((prev) => Math.max(0, prev - 1));
+                }
               }}
             />
           </div>
