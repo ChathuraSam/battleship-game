@@ -8,14 +8,19 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "lint": "eslint src --max-warnings 0",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "create-tables": "npx prisma migrate dev --name init",
+    "queries": "tsx ./src/prisma/queries.ts",
+    "caching": "tsx ./src/prisma/caching.ts"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "@prisma/client": "6.9.0",
+    "@prisma/extension-accelerate": "2.0.2"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
@@ -26,6 +31,8 @@
     "@types/node": "^20.10.0",
     "tsx": "^4.6.2",
     "typescript": "5.9.2",
-    "eslint": "^9.34.0"
+    "eslint": "^9.34.0",
+    "prisma": "6.9.0",
+    "ts-node": "10.9.2"
   }
 }
