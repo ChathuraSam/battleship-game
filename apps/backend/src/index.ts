@@ -1,5 +1,5 @@
 import express from "express";
-// import cors from 'cors';
+import cors from 'cors';
 // import helmet from 'helmet';
 // import morgan from 'morgan';
 // import dotenv from 'dotenv';
@@ -10,6 +10,14 @@ import express from "express";
 // dotenv.config();
 
 const app = express();
+// const PORT = process.env.PORT || 3001;
+
+// Add basic CORS and JSON middleware
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
+app.use(express.json());
 // const PORT = process.env.PORT || 3001;
 
 // // Middleware
@@ -61,22 +69,69 @@ import { createServer } from "node:http";
 import { Server } from "socket.io";
 
 const server = createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+  transports: ["polling", "websocket"], // Start with polling, then upgrade to websocket
+  allowEIO3: true, // Allow Engine.IO v3 clients
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  upgradeTimeout: 30000, // Time to wait for websocket upgrade
+  maxHttpBufferSize: 1e6, // 1 MB
+  allowRequest: (req, callback) => {
+    // Add additional validation if needed
+    console.log("Connection request from:", req.headers.origin);
+    callback(null, true);
+  },
+});
 
 app.get("/", (req, res) => {
   res.send({ message: "hello" });
 });
 
+// Add middleware for debugging
+io.engine.on("connection_error", (err) => {
+  console.log("Engine.IO connection error:", err.req);
+  console.log("Error code:", err.code);
+  console.log("Error message:", err.message);
+  console.log("Error context:", err.context);
+});
+
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
+  console.log("Transport:", socket.conn.transport.name);
+  
+  // Log transport upgrades
+  socket.conn.on("upgrade", () => {
+    console.log("Transport upgraded to:", socket.conn.transport.name);
+  });
+
+  // Handle connection errors
+  socket.on("error", (error) => {
+    console.error("Socket error:", error);
+  });
+
+  // Handle transport errors
+  socket.conn.on("error", (error) => {
+    console.error("Transport error for socket", socket.id, ":", error);
+  });
 
   socket.on("message", (msg) => {
     console.log("Message received:", msg);
     io.emit("message", msg); // Broadcast message to all connected clients
   });
 
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
+  socket.on("disconnect", (reason) => {
+    console.log("User disconnected:", socket.id, "Reason:", reason);
+  });
+
+  // Send a welcome message to the newly connected client
+  socket.emit("welcome", {
+    message: "Welcome to the battleship game!",
+    id: socket.id,
   });
 });
 
