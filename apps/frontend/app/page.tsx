@@ -3,7 +3,6 @@
 import { Button } from "@repo/ui/button";
 import { Grid } from "@repo/ui/grid";
 import { useState } from "react";
-import styles from "./page.module.css";
 
 export default function Home() {
   const [selectedShipType, setSelectedShipType] = useState<
@@ -66,17 +65,17 @@ export default function Home() {
     noOfBattleshipsRemain === 0 && noOfDestroyersRemain === 0;
 
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Button appName="web" className={styles.secondary}>
+    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-20 gap-16 font-sans sm:p-8 sm:pb-20">
+      <main className="flex flex-col gap-8 row-start-2 sm:items-center">
+        <Button appName="web" className="appearance-none rounded-full h-12 px-5 border border-gray-200 dark:border-gray-800 transition-all cursor-pointer flex items-center justify-center text-base font-medium bg-transparent min-w-[180px] hover:bg-gray-100 dark:hover:bg-gray-800">
           Open alert
         </Button>
-        <div className={styles.gridsContainer}>
-          <div className={styles.gridSection}>
-            <h2>Player Grid</h2>
-            <p>Your ships (click to place/remove)</p>
-            <div style={{ marginBottom: "1rem" }}>
-              <label style={{ marginRight: "1rem" }}>
+        <div className="flex flex-row gap-8 items-start justify-center flex-wrap w-full md:flex-col md:items-center md:gap-4">
+          <div className="flex flex-col items-center mt-8 md:mt-4">
+            <h2 className="mb-2 text-2xl text-center">Player Grid</h2>
+            <p className="mb-4 text-gray-600 text-center text-sm">Your ships (click to place/remove)</p>
+            <div className="mb-4">
+              <label className="mr-4">
                 <input
                   type="radio"
                   name="shipType"
@@ -85,7 +84,7 @@ export default function Home() {
                   onChange={(e) =>
                     setSelectedShipType(e.target.value as "battleship")
                   }
-                  style={{ marginRight: "0.5rem" }}
+                  className="mr-2"
                 />
                 Battleship(len=4) Remaining {noOfBattleshipsRemain}
               </label>
@@ -98,40 +97,28 @@ export default function Home() {
                   onChange={(e) =>
                     setSelectedShipType(e.target.value as "destroyer")
                   }
-                  style={{ marginRight: "0.5rem" }}
+                  className="mr-2"
                 />
                 Destroyer(len=3) Remaining {noOfDestroyersRemain}
               </label>
             </div>
 
             {!canPlaceShip() && (
-              <div
-                style={{
-                  color: "#dc2626",
-                  marginBottom: "1rem",
-                  fontWeight: "bold",
-                }}
-              >
+              <div className="text-red-600 mb-4 font-bold">
                 No more {selectedShipType}s available to place!
               </div>
             )}
 
             {canPlaceShip() && (
-              <div
-                style={{
-                  color: "#059669",
-                  marginBottom: "1rem",
-                  fontWeight: "bold",
-                }}
-              >
+              <div className="text-green-600 mb-4 font-bold">
                 Click on the grid to place a {selectedShipType} (
                 {selectedShipType === "battleship" ? "4" : "3"} cells,{" "}
                 {selectedOrientationType})
               </div>
             )}
 
-            <div style={{ marginBottom: "1rem" }}>
-              <label style={{ marginRight: "1rem" }}>
+            <div className="mb-4">
+              <label className="mr-4">
                 <input
                   type="radio"
                   name="shipOrientation"
@@ -140,7 +127,7 @@ export default function Home() {
                   onChange={(e) =>
                     setSelectedOrientationType(e.target.value as "vertical")
                   }
-                  style={{ marginRight: "0.5rem" }}
+                  className="mr-2"
                 />
                 Vertical
               </label>
@@ -153,25 +140,26 @@ export default function Home() {
                   onChange={(e) =>
                     setSelectedOrientationType(e.target.value as "horizontal")
                   }
-                  style={{ marginRight: "0.5rem" }}
+                  className="mr-2"
                 />
                 Horizontal
               </label>
             </div>
 
             {allShipsPlaced && (
-              <div
-                style={{
-                  color: "#059669",
-                }}
-              >
+              <div className="text-green-600">
                 All ships placed! Ready for battle!
-                <button>READY</button>
+                <button className="ml-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">READY</button>
               </div>
             )}
 
-            <div style={{ marginBottom: "1rem" }}>
-              <button onClick={resetAllShips}>Reset All Ships</button>
+            <div className="mb-4">
+              <button 
+                onClick={resetAllShips}
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
+              >
+                Reset All Ships
+              </button>
             </div>
             <Grid
               shipType={canPlaceShip() ? selectedShipType : undefined}
@@ -186,10 +174,10 @@ export default function Home() {
             />
           </div>
 
-          <div className={styles.gridSection}>
-            <h2>Enemy Grid</h2>
-            <p>Attack enemy ships (click to target)</p>
-            <div style={{ marginBottom: "1rem", fontWeight: "bold" }}>
+          <div className="flex flex-col items-center mt-8 md:mt-4">
+            <h2 className="mb-2 text-2xl text-center">Enemy Grid</h2>
+            <p className="mb-4 text-gray-600 text-center text-sm">Attack enemy ships (click to target)</p>
+            <div className="mb-4 font-bold">
               Shots fired: {shotsFired}
             </div>
 
@@ -210,7 +198,7 @@ export default function Home() {
           </div>
         </div>
       </main>
-      <footer className={styles.footer}></footer>
+      <footer className="row-start-3 flex gap-6"></footer>
     </div>
   );
 }
