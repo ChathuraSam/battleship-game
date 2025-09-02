@@ -11,7 +11,8 @@
     "check-types": "tsc --noEmit",
     "create-tables": "npx prisma migrate dev --name init",
     "queries": "tsx ./src/prisma/queries.ts",
-    "caching": "tsx ./src/prisma/caching.ts"
+    "caching": "tsx ./src/prisma/caching.ts",
+    "prisma-studio": "npx prisma studio"
   },
   "dependencies": {
     "express": "^4.18.2",
