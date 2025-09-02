@@ -2,7 +2,8 @@
 
 import { Button } from "@repo/ui/button";
 import { Grid } from "@repo/ui/grid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { socket } from "../socket";
 
 export default function Home() {
   const [selectedShipType, setSelectedShipType] = useState<
@@ -17,7 +18,82 @@ export default function Home() {
   const [noOfDestroyersRemain, setNoOfDestroyersRemain] = useState<number>(2);
   const [shotsFired, setShotsFired] = useState<number>(0);
 
-  const handleShipPlacement = (
+  const [isConnected, setIsConnected] = useState(false);
+  const [transport, setTransport] = useState("N/A");
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    function onConnect() {
+      console.log("Connected to server");
+      setIsConnected(true);
+      setConnectionError(null);
+      setTransport(socket.io.engine.transport.name);
+
+      socket.io.engine.on("upgrade", (transport) => {
+        console.log("Transport upgraded to:", transport.name);
+        setTransport(transport.name);
+      });
+
+      socket.io.engine.on("upgradeError", (error) => {
+        console.error("Transport upgrade error:", error);
+        setConnectionError(`Transport upgrade failed: ${error.message}`);
+      });
+    }
+
+    function onDisconnect(reason: string) {
+      console.log("Disconnected from server:", reason);
+      setIsConnected(false);
+      setTransport("N/A");
+      
+      // Handle specific disconnect reasons
+      if (reason === "transport error") {
+        setConnectionError("Transport connection failed");
+      } else if (reason === "transport close") {
+        setConnectionError("Transport was closed");
+      }
+    }
+
+    function onConnectError(error: Error) {
+      console.error("Connection error:", error);
+      setConnectionError(error.message);
+      setIsConnected(false);
+    }
+
+    function onReconnect(attemptNumber: number) {
+      console.log("Reconnected after", attemptNumber, "attempts");
+      setConnectionError(null);
+    }
+
+    function onReconnectError(error: Error) {
+      console.error("Reconnection error:", error);
+      setConnectionError(`Reconnection failed: ${error.message}`);
+    }
+
+    // Add event listeners
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+    socket.on("connect_error", onConnectError);
+    socket.on("reconnect", onReconnect);
+    socket.on("reconnect_error", onReconnectError);
+
+    // Connect the socket
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
+      socket.off("connect_error", onConnectError);
+      socket.off("reconnect", onReconnect);
+      socket.off("reconnect_error", onReconnectError);
+
+      // Disconnect when component unmounts
+      if (socket.connected) {
+        socket.disconnect();
+      }
+    };
+  }, []);  const handleShipPlacement = (
     shipCells: Array<{ row: number; col: number }>,
     shipType: string
   ) => {
@@ -66,6 +142,13 @@ export default function Home() {
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 sm:p-20 gap-16 font-sans">
+      <div className="text-center">
+        <p>Status: {isConnected ? "connected" : "disconnected"}</p>
+        <p>Transport: {transport}</p>
+        {connectionError && (
+          <p className="text-red-500 text-sm mt-2">Error: {connectionError}</p>
+        )}
+      </div>
       <main className="flex flex-col gap-8 row-start-2 items-start sm:items-center">
         <Button appName="web">Open alert</Button>
         <div className="flex flex-row gap-8 items-start justify-center flex-wrap w-full lg:flex-col lg:items-center lg:gap-4">
