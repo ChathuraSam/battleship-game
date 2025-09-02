@@ -229,14 +229,14 @@ export const Grid = ({
 
   const getCellClassName = (cell: CellState): string => {
     let classes =
-      "w-full h-full cursor-pointer flex items-center justify-center text-xs font-bold border";
+      "w-full h-full cursor-pointer flex items-center justify-center text-xs font-bold border-2 border-gray-600";
 
     // Handle targeting mode (enemy grid)
     if (mode === "targeting") {
       if (cell.isTargeted) {
-        classes += " bg-yellow-400 text-black border-yellow-600"; // Yellow for targeted
+        classes += " bg-yellow-400 text-black"; // Yellow for targeted
       } else {
-        classes += " bg-blue-100 text-gray-800 border-gray-400"; // Light blue for untargeted
+        classes += " bg-blue-100 text-gray-800"; // Light blue for untargeted
       }
       return classes;
     }
@@ -244,14 +244,14 @@ export const Grid = ({
     // Handle ship placement mode (player grid)
     if (cell.isSelected) {
       if (cell.shipType === "battleship") {
-        classes += " bg-red-600 text-white border-red-800"; // Red for battleship
+        classes += " bg-green-600 text-white"; // Green for battleship
       } else if (cell.shipType === "destroyer") {
-        classes += " bg-blue-600 text-white border-blue-800"; // Blue for destroyer
+        classes += " bg-green-600 text-white"; // Green for destroyer
       } else {
-        classes += " bg-red-500 text-white border-red-700"; // Default red for selected
+        classes += " bg-green-600 text-white"; // Green for selected
       }
     } else {
-      classes += " bg-gray-100 text-gray-800 border-gray-400"; // Light gray for unselected
+      classes += " bg-gray-100 text-gray-800"; // Light gray for unselected
     }
 
     return classes;

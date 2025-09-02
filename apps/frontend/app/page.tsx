@@ -169,6 +169,7 @@ export default function Home() {
             </div>
 
             <Grid
+              className="border-2 border-gray-400"
               shipType={canPlaceShip() ? selectedShipType : undefined}
               orientation={selectedOrientationType}
               onShipPlacement={handleShipPlacement}
@@ -192,6 +193,7 @@ export default function Home() {
 
             <Grid
               mode="targeting"
+              className="border-2 border-gray-400"
               onCellClick={(row, col, isTargeted) => {
                 console.log(
                   `Enemy Grid - Cell ${row + 1}-${col + 1} ${isTargeted ? "targeted" : "untargeted"}`
