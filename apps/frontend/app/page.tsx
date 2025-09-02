@@ -44,7 +44,7 @@ export default function Home() {
       console.log("Disconnected from server:", reason);
       setIsConnected(false);
       setTransport("N/A");
-      
+
       // Handle specific disconnect reasons
       if (reason === "transport error") {
         setConnectionError("Transport connection failed");
@@ -93,7 +93,8 @@ export default function Home() {
         socket.disconnect();
       }
     };
-  }, []);  const handleShipPlacement = (
+  }, []);
+  const handleShipPlacement = (
     shipCells: Array<{ row: number; col: number }>,
     shipType: string
   ) => {
