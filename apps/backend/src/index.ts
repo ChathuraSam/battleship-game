@@ -1,5 +1,5 @@
 import express from "express";
-import cors from 'cors';
+import cors from "cors";
 // import helmet from 'helmet';
 // import morgan from 'morgan';
 // import dotenv from 'dotenv';
@@ -13,10 +13,12 @@ const app = express();
 // const PORT = process.env.PORT || 3001;
 
 // Add basic CORS and JSON middleware
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
 // const PORT = process.env.PORT || 3001;
 
@@ -103,7 +105,7 @@ io.engine.on("connection_error", (err) => {
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
   console.log("Transport:", socket.conn.transport.name);
-  
+
   // Log transport upgrades
   socket.conn.on("upgrade", () => {
     console.log("Transport upgraded to:", socket.conn.transport.name);
