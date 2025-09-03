@@ -8,17 +8,50 @@ datasource db {
 }
 
 model User {
-  id      Int      @id @default(autoincrement())
-  email   String   @unique
-  name    String?
-  posts   Post[]
+  id        String   @id @default(uuid())
+  username  String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  players   Player[]
 }
 
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean @default(false)
-  author    User?   @relation(fields: [authorId], references: [id])
-  authorId  Int?
+model Game {
+  id        String   @id @default(uuid())
+  status    GameStatus @default(WAITING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  players   Player[]
+  moves     Move[]
+}
+
+model Player {
+  id        String   @id @default(uuid())
+  userId    String
+  gameId    String
+  isHost    Boolean  @default(false)
+
+  user      User   @relation(fields: [userId], references: [id])
+  game      Game   @relation(fields: [gameId], references: [id])
+  moves     Move[] // Added this line - the missing opposite relation field
+}
+
+model Move {
+  id        String   @id @default(uuid())
+  gameId    String
+  playerId  String
+  x         Int
+  y         Int
+  hit       Boolean
+  createdAt DateTime @default(now())
+
+  game      Game    @relation(fields: [gameId], references: [id])
+  player    Player  @relation(fields: [playerId], references: [id])
+}
+
+enum GameStatus {
+  WAITING
+  IN_PROGRESS
+  COMPLETED
 }
