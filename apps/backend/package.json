@@ -10,10 +10,11 @@
     "lint": "eslint src --max-warnings 0",
     "check-types": "tsc --noEmit",
     "create-tables": "npx prisma migrate dev --name init",
-    "queries": "tsx ./src/prisma/queries.ts",
-    "caching": "tsx ./src/prisma/caching.ts",
+    "queries": "tsx ./prisma/queries.ts",
+    "caching": "tsx ./prisma/caching.ts",
     "prisma-studio": "npx prisma studio",
-    "create-migration-file": "npx prisma migrate dev --create-only"
+    "create-migration-file": "npx prisma migrate dev --create-only",
+    "prisma-reset-db": "npx prisma migrate reset"
   },
   "dependencies": {
     "cors": "^2.8.5",
