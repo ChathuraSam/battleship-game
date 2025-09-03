@@ -1,5 +1,11 @@
 "use client";
-import { createContext, useContext, useEffect, useRef, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { io, Socket } from "socket.io-client";
 
 interface SocketContextValue {
@@ -9,23 +15,36 @@ interface SocketContextValue {
 const SocketContext = createContext<SocketContextValue>({ socket: null });
 
 export const SocketProvider = ({ children }: { children: ReactNode }) => {
-  const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    if (!socketRef.current) {
-      socketRef.current = io("http://localhost:3001", {
-        transports: ["websocket"],
-      });
-      console.log("Socket connected", socketRef.current.id);
+    const newSocket = io("http://localhost:3001", {
+      transports: ["websocket"],
+      autoConnect: true,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
+    });
 
-      socketRef.current.on("disconnect", () => {
-        console.log("Socket disconnected");
-      });
-    }
-  }, []);
+    newSocket.on("connect", () => {
+      console.log("Socket connected", newSocket.id);
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Socket disconnected");
+    });
+
+    // Set the socket immediately - it will connect automatically
+    setSocket(newSocket);
+
+    // Cleanup function
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []); // Empty dependency array - only run once on mount
 
   return (
-    <SocketContext.Provider value={{ socket: socketRef.current }}>
+    <SocketContext.Provider value={{ socket }}>
       {children}
     </SocketContext.Provider>
   );
