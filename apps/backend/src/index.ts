@@ -8,6 +8,7 @@ import { router as healthRouter } from "./routes/health";
 import { createServer } from "node:http";
 import { Server, Socket } from "socket.io";
 import http from "http";
+import { registerGameHandlers } from "./sockets/game.socket";
 
 // // Load environment variables
 dotenv.config();
@@ -35,6 +36,9 @@ const io = new Server(server, {
 
 io.on("connection", (socket: Socket) => {
   console.log("A user connected:", socket.id);
+
+  // Register game-related events
+  registerGameHandlers(io, socket);
 
   socket.on("joinGame", (gameId: string) => {
     socket.join(gameId);
