@@ -304,35 +304,157 @@ import { useState } from "react";
 import useSocket from "../hooks/useSocket";
 
 export default function GamePage() {
-  const gameId = "game-123";
+  // const player1Id = "23ff0250-0cf0-4084-b1ce-bd3aacf5628a";
+  // const player2Id = "5e7c5101-7c90-4437-b935-a225d73ea920";
+
+  const [gameId, setGameId] = useState("e5c5a429-9fb9-41f9-be67-4b04229d9792");
+  const [playerId, setPlayerId] = useState(
+    "23ff0250-0cf0-4084-b1ce-bd3aacf5628a"
+  );
+  const [isGameStarted, setIsGameStarted] = useState(true);
+
   const [moves, setMoves] = useState<
     { x: number; y: number; from: "me" | "opponent" }[]
   >([]);
 
-  const { makeMove } = useSocket(gameId as string, (move) => {
+  const { makeMove } = useSocket(playerId as string, (move) => {
     setMoves((prev) => [...prev, { ...move, from: "opponent" }]);
   });
 
   const handleClick = () => {
+    console.log("*** handle click run");
     const x = Math.floor(Math.random() * 10);
     const y = Math.floor(Math.random() * 10);
     makeMove(x, y);
     setMoves((prev) => [...prev, { x, y, from: "me" }]);
   };
 
-  if (!gameId) return <p>Loading...</p>;
+  const handleJoinGame = () => {
+    if (playerId.trim() && gameId.trim()) {
+      setIsGameStarted(true);
+    } else {
+      alert("Please enter both Player ID and Game ID");
+    }
+  };
+
+  const handleLeaveGame = () => {
+    setIsGameStarted(false);
+    setMoves([]);
+  };
+
+  if (!isGameStarted) {
+    return (
+      <div style={{ padding: "20px", maxWidth: "400px", margin: "0 auto" }}>
+        <h1>Join Battleship Game</h1>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label
+            htmlFor="playerId"
+            style={{ display: "block", marginBottom: "5px" }}
+          >
+            Player ID:
+          </label>
+          <input
+            id="playerId"
+            type="text"
+            value={playerId}
+            onChange={(e) => setPlayerId(e.target.value)}
+            placeholder="Enter your player ID"
+            style={{
+              width: "100%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: "15px" }}>
+          <label
+            htmlFor="gameId"
+            style={{ display: "block", marginBottom: "5px" }}
+          >
+            Game ID:
+          </label>
+          <input
+            id="gameId"
+            type="text"
+            value={gameId}
+            onChange={(e) => setGameId(e.target.value)}
+            placeholder="Enter game ID"
+            style={{
+              width: "100%",
+              padding: "8px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+            }}
+          />
+        </div>
+
+        <button
+          onClick={handleJoinGame}
+          style={{
+            width: "100%",
+            padding: "10px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Join Game
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1>Battleship Game #{gameId}</h1>
-      <button onClick={handleClick}>Make Random Move</button>
-      <ul>
-        {moves.map((m, i) => (
-          <li key={i}>
-            {m.from}: ({m.x}, {m.y})
-          </li>
-        ))}
-      </ul>
+    <div style={{ padding: "20px" }}>
+      <div style={{ marginBottom: "20px" }}>
+        <h1>Battleship Game</h1>
+        <p>Player ID: {playerId}</p>
+        <p>Game ID: {gameId}</p>
+        <button
+          onClick={handleLeaveGame}
+          style={{
+            padding: "5px 10px",
+            backgroundColor: "#dc3545",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          Leave Game
+        </button>
+      </div>
+
+      <button
+        onClick={handleClick}
+        style={{
+          padding: "10px 20px",
+          backgroundColor: "#28a745",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+          marginBottom: "20px",
+        }}
+      >
+        Make Random Move
+      </button>
+
+      <div>
+        <h3>Moves:</h3>
+        <ul>
+          {moves.map((m, i) => (
+            <li key={i}>
+              {m.from}: ({m.x}, {m.y})
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
