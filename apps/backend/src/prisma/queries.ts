@@ -5,98 +5,159 @@ const prisma = new PrismaClient().$extends(withAccelerate());
 
 // A `main` function so that we can use async/await
 async function main() {
-  const user1Email = `alice${Date.now()}@prisma.io`;
-  const user2Email = `bob${Date.now()}@prisma.io`;
+  const player1Username = `player_${Date.now()}`;
+  const player2Username = `player_${Date.now() + 1}`;
 
-  // Seed the database with users and posts
-  const user1 = await prisma.user.create({
-    data: {
-      email: user1Email,
-      name: "Alice",
-      posts: {
-        create: {
-          title: "Join the Prisma community on Discord",
-          content: "https://pris.ly/discord",
-          published: true,
-        },
-      },
-    },
-    include: {
-      posts: true,
-    },
-  });
-  const user2 = await prisma.user.create({
-    data: {
-      email: user2Email,
-      name: "Bob",
-      posts: {
-        create: [
-          {
-            title: "Check out Prisma on YouTube",
-            content: "https://pris.ly/youtube",
-            published: true,
-          },
-          {
-            title: "Follow Prisma on Twitter",
-            content: "https://twitter.com/prisma/",
-            published: false,
-          },
+  // Sample board data for battleship
+  const sampleBoard = {
+    ships: [
+      {
+        name: "battleship",
+        positions: [
+          [2, 0],
+          [2, 1],
+          [2, 2],
+          [2, 3],
         ],
       },
-    },
-    include: {
-      posts: true,
+      {
+        name: "destroyer",
+        positions: [
+          [8, 7],
+          [8, 8],
+          [8, 9],
+        ],
+      },
+      {
+        name: "destroyer",
+        positions: [
+          [3, 7],
+          [3, 8],
+          [3, 9],
+        ],
+      },
+    ],
+    hits: [],
+    misses: [],
+  };
+
+  // Create first player (host)
+  const player1 = await prisma.player.create({
+    data: {
+      username: player1Username,
+      isHost: true,
+      board: sampleBoard,
     },
   });
+
+  // Create a game
+  const game = await prisma.game.create({
+    data: {
+      status: "WAITING",
+      players: {
+        connect: { id: player1.id },
+      },
+    },
+  });
+
+  // Update player1 to be in the game
+  await prisma.player.update({
+    where: { id: player1.id },
+    data: { gameId: game.id },
+  });
+
+  // Create second player (opponent)
+  const player2 = await prisma.player.create({
+    data: {
+      username: player2Username,
+      gameId: game.id,
+      isHost: false,
+      board: sampleBoard,
+    },
+  });
+
+  // Update game status to IN_PROGRESS
+  const updatedGame = await prisma.game.update({
+    where: { id: game.id },
+    data: { status: "IN_PROGRESS" },
+  });
+
   console.log(
-    `Created users: ${user1.name} (${user1.posts.length} post) and ${user2.name} (${user2.posts.length} posts) `
+    `Created game: ${updatedGame.id} with players: ${player1.username} (host) and ${player2.username}`
   );
 
-  // Retrieve all published posts
-  const allPosts = await prisma.post.findMany({
-    where: { published: true },
-  });
-  console.log(`Retrieved all published posts: ${JSON.stringify(allPosts)}`);
-
-  // Create a new post (written by an already existing user with email alice@prisma.io)
-  const newPost = await prisma.post.create({
+  // Create some moves
+  const move1 = await prisma.move.create({
     data: {
-      title: "Join the Prisma Discord community",
-      content: "https://pris.ly/discord",
-      published: false,
-      author: {
-        connect: {
-          email: user1Email,
+      gameId: game.id,
+      playerId: player1.id,
+      x: 0,
+      y: 0,
+      hit: true,
+    },
+  });
+
+  const move2 = await prisma.move.create({
+    data: {
+      gameId: game.id,
+      playerId: player2.id,
+      x: 5,
+      y: 5,
+      hit: false,
+    },
+  });
+
+  console.log(`Created moves: ${JSON.stringify([move1, move2])}`);
+
+  // Retrieve game with all players and moves
+  const gameWithData = await prisma.game.findUnique({
+    where: { id: game.id },
+    include: {
+      players: true,
+      moves: {
+        include: {
+          player: true,
         },
       },
     },
   });
-  console.log(`Created a new post: ${JSON.stringify(newPost)}`);
 
-  // Publish the new post
-  const updatedPost = await prisma.post.update({
-    where: {
-      id: newPost.id,
-    },
-    data: {
-      published: true,
+  console.log(`Game with data: ${JSON.stringify(gameWithData, null, 2)}`);
+
+  // Retrieve all games that are waiting for players
+  const waitingGames = await prisma.game.findMany({
+    where: { status: "WAITING" },
+    include: {
+      players: true,
     },
   });
-  console.log(
-    `Published the newly created post: ${JSON.stringify(updatedPost)}`
-  );
 
-  // Retrieve all posts by user with email alice@prisma.io
-  const postsByUser = await prisma.post.findMany({
+  console.log(`Waiting games: ${JSON.stringify(waitingGames)}`);
+
+  // Retrieve moves for a specific player
+  const playerMoves = await prisma.move.findMany({
     where: {
-      author: {
-        email: user1Email,
-      },
+      playerId: player1.id,
+    },
+    include: {
+      game: true,
     },
   });
+
   console.log(
-    `Retrieved all posts from a specific user: ${JSON.stringify(postsByUser)}`
+    `Player ${player1.username} moves: ${JSON.stringify(playerMoves)}`
   );
+
+  // Find player by username
+  const foundPlayer = await prisma.player.findUnique({
+    where: { username: player1Username },
+    include: {
+      game: true,
+      moves: true,
+    },
+  });
+
+  console.log(`Found player: ${JSON.stringify(foundPlayer)}`);
 }
 
 main()
