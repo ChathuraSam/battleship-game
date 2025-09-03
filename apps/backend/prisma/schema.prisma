@@ -13,28 +13,28 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  players   Player[]
+  players Player[]
 }
 
 model Game {
-  id        String   @id @default(uuid())
+  id        String     @id @default(uuid())
   status    GameStatus @default(WAITING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
-  players   Player[]
-  moves     Move[]
+  players Player[]
+  moves   Move[]
 }
 
 model Player {
-  id        String   @id @default(uuid())
-  userId    String
-  gameId    String
-  isHost    Boolean  @default(false)
+  id     String  @id @default(uuid())
+  userId String
+  gameId String
+  isHost Boolean @default(false)
 
-  user      User   @relation(fields: [userId], references: [id])
-  game      Game   @relation(fields: [gameId], references: [id])
-  moves     Move[] // Added this line - the missing opposite relation field
+  user  User   @relation(fields: [userId], references: [id])
+  game  Game   @relation(fields: [gameId], references: [id])
+  moves Move[] // Added this line - the missing opposite relation field
 }
 
 model Move {
@@ -46,8 +46,8 @@ model Move {
   hit       Boolean
   createdAt DateTime @default(now())
 
-  game      Game    @relation(fields: [gameId], references: [id])
-  player    Player  @relation(fields: [playerId], references: [id])
+  game   Game   @relation(fields: [gameId], references: [id])
+  player Player @relation(fields: [playerId], references: [id])
 }
 
 enum GameStatus {
