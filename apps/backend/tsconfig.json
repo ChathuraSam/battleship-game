@@ -10,6 +10,6 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*", "prisma/caching.ts", "prisma/queries.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
