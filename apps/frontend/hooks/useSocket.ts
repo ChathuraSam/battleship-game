@@ -9,7 +9,7 @@ interface Move {
 type OnOpponentMove = (move: Move) => void;
 
 export default function useSocket(
-  gameId: string,
+  playerId: string,
   onOpponentMove?: OnOpponentMove
 ) {
   const { socket } = useSocketContext();
@@ -17,7 +17,7 @@ export default function useSocket(
   useEffect(() => {
     if (!socket) return;
 
-    socket.emit("joinGame", gameId);
+    socket.emit("joinGame", playerId);
 
     socket.on("playerJoined", (data) => {
       console.log("Another player joined:", data);
@@ -31,14 +31,15 @@ export default function useSocket(
       socket.off("playerJoined");
       socket.off("opponentMove");
     };
-  }, [socket, gameId, onOpponentMove]);
+  }, [socket, playerId, onOpponentMove]);
 
   const makeMove = (x: number, y: number) => {
+    console.log("Make move***", { playerId });
     if (!socket) {
       console.warn("Socket not connected yet, cannot make move");
       return;
     }
-    socket.emit("makeMove", { gameId, x, y });
+    socket.emit("makeMove", { playerId, x, y });
   };
 
   return { makeMove };
