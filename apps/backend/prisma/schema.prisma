@@ -7,15 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(uuid())
-  username  String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  players Player[]
-}
-
 model Game {
   id        String     @id @default(uuid())
   status    GameStatus @default(WAITING)
@@ -27,14 +18,16 @@ model Game {
 }
 
 model Player {
-  id     String  @id @default(uuid())
-  userId String
-  gameId String
-  isHost Boolean @default(false)
+  id        String   @id @default(uuid())
+  username  String   @unique
+  gameId    String? // Nullable when not in a game
+  isHost    Boolean  @default(false)
+  board     Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user  User   @relation(fields: [userId], references: [id])
-  game  Game   @relation(fields: [gameId], references: [id])
-  moves Move[] // Added this line - the missing opposite relation field
+  game  Game?  @relation(fields: [gameId], references: [id])
+  moves Move[]
 }
 
 model Move {
