@@ -34,7 +34,11 @@ export default function useSocket(
   }, [socket, gameId, onOpponentMove]);
 
   const makeMove = (x: number, y: number) => {
-    socket?.emit("makeMove", { gameId, x, y });
+    if (!socket) {
+      console.warn("Socket not connected yet, cannot make move");
+      return;
+    }
+    socket.emit("makeMove", { gameId, x, y });
   };
 
   return { makeMove };
