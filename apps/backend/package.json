@@ -12,7 +12,8 @@
     "create-tables": "npx prisma migrate dev --name init",
     "queries": "tsx ./src/prisma/queries.ts",
     "caching": "tsx ./src/prisma/caching.ts",
-    "prisma-studio": "npx prisma studio"
+    "prisma-studio": "npx prisma studio",
+    "create-migration-file": "npx prisma migrate dev --create-only"
   },
   "dependencies": {
     "cors": "^2.8.5",
