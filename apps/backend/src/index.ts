@@ -43,6 +43,7 @@ io.on("connection", (socket: Socket) => {
   });
 
   socket.on("makeMove", ({ gameId, x, y }) => {
+    console.log("moved", { gameId, x, y });
     socket.to(gameId).emit("opponentMove", { x, y });
   });
 
