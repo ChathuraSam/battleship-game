@@ -5,15 +5,15 @@ const gameService = new GameService();
 
 export function registerGameHandlers(io: Server, socket: Socket) {
   // Player makes a move
-  socket.on("makeMove", async ({ gameId, playerId, x, y }) => {
+  socket.on("makeMove", async ({ playerId, x, y }) => {
     try {
-      const result = await gameService.makeMove(gameId, playerId, x, y);
+      const result = await gameService.makeMove(playerId, x, y);
 
       // Notify this player of result
       socket.emit("moveResult", result);
 
       // Notify other players in the same game room
-      socket.to(gameId).emit("opponentMove", result);
+      socket.to(playerId).emit("opponentMove", result);
     } catch (error: any) {
       socket.emit("error", { message: error.message });
     }
