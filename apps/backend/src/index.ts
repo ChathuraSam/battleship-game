@@ -46,11 +46,6 @@ io.on("connection", (socket: Socket) => {
     socket.to(gameId).emit("playerJoined", { playerId: socket.id });
   });
 
-  socket.on("makeMove", ({ gameId, x, y }) => {
-    console.log("moved", { gameId, x, y });
-    socket.to(gameId).emit("opponentMove", { x, y });
-  });
-
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });

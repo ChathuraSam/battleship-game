@@ -8,14 +8,15 @@ export class GameService {
   }
 
   // Check if a move is a hit or miss, update the board, and record the move
-  async makeMove(gameId: string, playerId: string, x: number, y: number) {
-    const boardData = await this.gameRepo.getBoard(playerId);
-
-    if (!boardData || !boardData.board) {
+  async makeMove(playerId: string, x: number, y: number) {
+    let boardData;
+    try {
+      boardData = await this.gameRepo.getBoard(playerId);
+    } catch (error) {
       throw new Error("Board not found for this player");
     }
 
-    const board = boardData.board as any; // cast JSON type
+    const board = boardData?.board as any; // cast JSON type
 
     // Check if the move hits any ship
     let hit = false;
@@ -40,7 +41,7 @@ export class GameService {
     await this.gameRepo.setBoard(playerId, board);
 
     // Record move in DB
-    await this.gameRepo.recordMove(gameId, playerId, x, y, hit);
+    await this.gameRepo.recordMove(playerId, playerId, x, y, hit);
 
     return {
       hit,
