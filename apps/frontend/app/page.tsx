@@ -19,6 +19,17 @@ export default function Home() {
   const [noOfDestroyersRemain, setNoOfDestroyersRemain] = useState<number>(2);
   const [shotsFired, setShotsFired] = useState<number>(0);
 
+  // State to track all placed ships
+  const [placedShips, setPlacedShips] = useState<{
+    battleship: Array<{ row: number; col: number }>;
+    destroyer1: Array<{ row: number; col: number }>;
+    destroyer2: Array<{ row: number; col: number }>;
+  }>({
+    battleship: [],
+    destroyer1: [],
+    destroyer2: [],
+  });
+
   const [isConnected, setIsConnected] = useState(false);
   const [transport, setTransport] = useState("N/A");
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -71,6 +82,24 @@ export default function Home() {
   ) => {
     console.log(`Placed ${shipType} at cells:`, shipCells);
 
+    // Store the ship placement data
+    setPlacedShips((prev) => {
+      const updated = { ...prev };
+
+      if (shipType === "battleship") {
+        updated.battleship = shipCells;
+      } else if (shipType === "destroyer") {
+        // For destroyers, we need to assign to destroyer1 or destroyer2
+        if (updated.destroyer1.length === 0) {
+          updated.destroyer1 = shipCells;
+        } else if (updated.destroyer2.length === 0) {
+          updated.destroyer2 = shipCells;
+        }
+      }
+
+      return updated;
+    });
+
     // Update the remaining ship counts
     if (shipType === "battleship") {
       setNoOfBattleshipsRemain((prev) => Math.max(0, prev - 1));
@@ -81,34 +110,24 @@ export default function Home() {
 
   const handleReadyButtonClick = () => {
     console.log("ready button clicked");
+
+    // Convert placed ships to the backend expected format
     const ships = [
       {
         name: "battleship",
-        positions: [
-          [2, 0],
-          [2, 1],
-          [2, 2],
-          [2, 3],
-        ],
+        positions: placedShips.battleship.map((cell) => [cell.row, cell.col]),
       },
       {
         name: "destroyer1",
-        positions: [
-          [8, 7],
-          [8, 8],
-          [8, 9],
-        ],
+        positions: placedShips.destroyer1.map((cell) => [cell.row, cell.col]),
       },
       {
         name: "destroyer2",
-        positions: [
-          [3, 7],
-          [3, 8],
-          [3, 9],
-        ],
+        positions: placedShips.destroyer2.map((cell) => [cell.row, cell.col]),
       },
     ];
 
+    console.log("Sending ship data to backend:", ships);
     // send this ship data to backend
     placeShips(playerId, ships);
   };
@@ -118,6 +137,36 @@ export default function Home() {
     shipCells: Array<{ row: number; col: number }>
   ) => {
     console.log(`Removed ${shipType} from cells:`, shipCells);
+
+    // Remove the ship placement data
+    setPlacedShips((prev) => {
+      const updated = { ...prev };
+
+      if (shipType === "battleship") {
+        updated.battleship = [];
+      } else if (shipType === "destroyer") {
+        // Check which destroyer was removed by comparing positions
+        const cellsMatch = (
+          cells1: Array<{ row: number; col: number }>,
+          cells2: Array<{ row: number; col: number }>
+        ) => {
+          if (cells1.length !== cells2.length) return false;
+          return cells1.every((cell1) =>
+            cells2.some(
+              (cell2) => cell1.row === cell2.row && cell1.col === cell2.col
+            )
+          );
+        };
+
+        if (cellsMatch(updated.destroyer1, shipCells)) {
+          updated.destroyer1 = [];
+        } else if (cellsMatch(updated.destroyer2, shipCells)) {
+          updated.destroyer2 = [];
+        }
+      }
+
+      return updated;
+    });
 
     // Update the remaining ship counts when ship is removed
     if (shipType === "battleship") {
@@ -139,6 +188,11 @@ export default function Home() {
     setNoOfBattleshipsRemain(1);
     setNoOfDestroyersRemain(2);
     setShotsFired(0);
+    setPlacedShips({
+      battleship: [],
+      destroyer1: [],
+      destroyer2: [],
+    });
     // Force grid reset by key change would be ideal, but for now this works
     window.location.reload();
   };
