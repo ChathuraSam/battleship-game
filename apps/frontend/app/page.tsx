@@ -40,10 +40,10 @@ export default function Home() {
     setMoves((prev) => [...prev, { ...move, from: "opponent" }]);
   });
 
-  const handleClick = () => {
+  const handleClick = ({ row, col }: { row: number; col: number }) => {
     console.log("*** handle click run");
-    const x = Math.floor(Math.random() * 10);
-    const y = Math.floor(Math.random() * 10);
+    const x = row;
+    const y = col;
     makeMove(x, y);
     setMoves((prev) => [...prev, { x, y, from: "me" }]);
   };
@@ -316,6 +316,7 @@ export default function Home() {
                 console.log(
                   `Enemy Grid - Cell ${row + 1}-${col + 1} ${isTargeted ? "targeted" : "untargeted"}`
                 );
+                handleClick({ row, col });
                 // Update shots counter
                 if (isTargeted) {
                   setShotsFired((prev) => prev + 1);
