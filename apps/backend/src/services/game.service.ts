@@ -7,46 +7,94 @@ export class GameService {
     this.gameRepo = new GameRepository();
   }
 
-  // Check if a move is a hit or miss, update the board, and record the move
-  async makeMove(playerId: string, x: number, y: number) {
-    let boardData;
+  // Check if a move is a hit or miss on opponent's board, update the board, and record the move
+  async makeMove(attackingPlayerId: string, x: number, y: number) {
     try {
-      boardData = await this.gameRepo.getBoard(playerId);
-    } catch (error) {
-      throw new Error("Board not found for this player");
-    }
+      // Get the attacking player's full data to find gameId
+      const attackingPlayerData =
+        await this.gameRepo.getPlayerById(attackingPlayerId);
+      if (!attackingPlayerData || !attackingPlayerData.gameId) {
+        throw new Error("Player is not in a game");
+      }
 
-    const board = boardData?.board as any; // cast JSON type
+      // Find the opponent player in the same game
+      const opponentPlayer = await this.gameRepo.getOpponentPlayer(
+        attackingPlayerData.gameId,
+        attackingPlayerId
+      );
 
-    // Check if the move hits any ship
-    let hit = false;
-    for (const ship of board.ships) {
-      for (const pos of ship.positions) {
-        if (pos[0] === x && pos[1] === y) {
-          hit = true;
+      if (!opponentPlayer || !opponentPlayer.board) {
+        throw new Error("Opponent player not found or has no board");
+      }
+
+      const opponentBoard = opponentPlayer.board as any; // cast JSON type
+
+      // Check if coordinate has already been attacked
+      if (this.isCoordinateAlreadyAttacked(opponentBoard, x, y)) {
+        throw new Error("This coordinate has already been attacked");
+      }
+
+      // Check if the move hits any ship on opponent's board
+      let hit = false;
+      let hitShipName = "";
+      let isShipSunk = false;
+
+      for (const ship of opponentBoard.ships) {
+        for (const pos of ship.positions) {
+          if (pos[0] === x && pos[1] === y) {
+            hit = true;
+            hitShipName = ship.name;
+            break;
+          }
+        }
+        if (hit) {
+          // Check if the ship is completely sunk after this hit
+          let shipHitCount = 0;
+          for (const pos of ship.positions) {
+            // Check if this position has been hit before or is the current hit
+            const alreadyHit = opponentBoard.hits.some(
+              (hitPos: number[]) => hitPos[0] === pos[0] && hitPos[1] === pos[1]
+            );
+            if (alreadyHit || (pos[0] === x && pos[1] === y)) {
+              shipHitCount++;
+            }
+          }
+          isShipSunk = shipHitCount === ship.positions.length;
           break;
         }
       }
-      if (hit) break;
+
+      // Update opponent's board JSON
+      if (hit) {
+        opponentBoard.hits.push([x, y]);
+      } else {
+        opponentBoard.misses.push([x, y]);
+      }
+
+      // Check if all ships are sunk (game over)
+      const allShipsSunk = this.areAllShipsSunk(opponentBoard);
+
+      // Persist opponent's board update
+      await this.gameRepo.setBoard(opponentPlayer.id, opponentBoard);
+
+      return {
+        hit,
+        coordinates: [x, y],
+        shipName: hit ? hitShipName : null,
+        isShipSunk,
+        isGameOver: allShipsSunk,
+        attackingPlayerId,
+        opponentPlayerId: opponentPlayer.id,
+        gameId: attackingPlayerData.gameId,
+        opponentBoard: {
+          hits: opponentBoard.hits,
+          misses: opponentBoard.misses,
+        },
+      };
+    } catch (error) {
+      console.error("Error in makeMove:", error);
+      throw error;
     }
-
-    // Update board JSON
-    if (hit) {
-      board.hits.push([x, y]);
-    } else {
-      board.misses.push([x, y]);
-    }
-
-    // Persist board update
-    await this.gameRepo.setBoard(playerId, board);
-
-    // Record move in DB
-    // await this.gameRepo.recordMove(playerId, playerId, x, y, hit);
-
-    return {
-      hit,
-      board,
-    };
   }
 
   async joinGame(gameId: string, playerId: string) {
@@ -134,5 +182,44 @@ export class GameService {
 
   async getGameState(gameId: string) {
     return this.gameRepo.getGameState(gameId);
+  }
+
+  async getPlayerData(playerId: string) {
+    return this.gameRepo.getPlayerById(playerId);
+  }
+
+  // Helper method to check if a coordinate has already been attacked
+  private isCoordinateAlreadyAttacked(
+    board: any,
+    x: number,
+    y: number
+  ): boolean {
+    const alreadyHit = board.hits.some(
+      (hitPos: number[]) => hitPos[0] === x && hitPos[1] === y
+    );
+    const alreadyMissed = board.misses.some(
+      (missPos: number[]) => missPos[0] === x && missPos[1] === y
+    );
+    return alreadyHit || alreadyMissed;
+  }
+
+  // Helper method to check if all ships are sunk
+  private areAllShipsSunk(board: any): boolean {
+    for (const ship of board.ships) {
+      let shipSunk = true;
+      for (const pos of ship.positions) {
+        const isHit = board.hits.some(
+          (hitPos: number[]) => hitPos[0] === pos[0] && hitPos[1] === pos[1]
+        );
+        if (!isHit) {
+          shipSunk = false;
+          break;
+        }
+      }
+      if (!shipSunk) {
+        return false;
+      }
+    }
+    return true;
   }
 }

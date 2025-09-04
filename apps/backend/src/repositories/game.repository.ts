@@ -118,4 +118,25 @@ export class GameRepository {
       // include: { players: { include: { game: true } }, moves: true },
     });
   }
+
+  async getPlayerById(playerId: string) {
+    return prisma.player.findUnique({
+      where: { id: playerId },
+    });
+  }
+
+  async getOpponentPlayer(gameId: string, currentPlayerId: string) {
+    return prisma.player.findFirst({
+      where: {
+        gameId: gameId,
+        id: { not: currentPlayerId },
+      },
+    });
+  }
+
+  async getGamePlayers(gameId: string) {
+    return prisma.player.findMany({
+      where: { gameId: gameId },
+    });
+  }
 }
