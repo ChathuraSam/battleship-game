@@ -85,28 +85,15 @@ export class GameService {
         ships: [
           {
             name: "battleship",
-            positions: [
-              [2, 0],
-              [2, 1],
-              [2, 2],
-              [2, 3],
-            ],
+            positions: [],
           },
           {
-            name: "destroyer",
-            positions: [
-              [8, 7],
-              [8, 8],
-              [8, 9],
-            ],
+            name: "destroyer1",
+            positions: [],
           },
           {
-            name: "destroyer",
-            positions: [
-              [3, 7],
-              [3, 8],
-              [3, 9],
-            ],
+            name: "destroyer2",
+            positions: [],
           },
         ],
         hits: [],
