@@ -36,9 +36,12 @@ export default function Home() {
     { x: number; y: number; from: "me" | "opponent" }[]
   >([]);
 
-  const { makeMove, joinGame } = useSocket(playerId as string, (move) => {
-    setMoves((prev) => [...prev, { ...move, from: "opponent" }]);
-  });
+  const { makeMove, joinGame, placeShips } = useSocket(
+    playerId as string,
+    (move) => {
+      setMoves((prev) => [...prev, { ...move, from: "opponent" }]);
+    }
+  );
 
   const handleCellClick = ({ row, col }: { row: number; col: number }) => {
     console.log("*** handle click run");
@@ -74,6 +77,40 @@ export default function Home() {
     } else if (shipType === "destroyer") {
       setNoOfDestroyersRemain((prev) => Math.max(0, prev - 1));
     }
+  };
+
+  const handleReadyButtonClick = () => {
+    console.log("ready button clicked");
+    const ships = [
+      {
+        name: "battleship",
+        positions: [
+          [2, 0],
+          [2, 1],
+          [2, 2],
+          [2, 3],
+        ],
+      },
+      {
+        name: "destroyer1",
+        positions: [
+          [8, 7],
+          [8, 8],
+          [8, 9],
+        ],
+      },
+      {
+        name: "destroyer2",
+        positions: [
+          [3, 7],
+          [3, 8],
+          [3, 9],
+        ],
+      },
+    ];
+
+    // send this ship data to backend
+    placeShips(playerId, ships);
   };
 
   const handleShipRemoval = (
@@ -272,7 +309,10 @@ export default function Home() {
             {allShipsPlaced && (
               <div className="text-green-600 text-center mb-4">
                 <div className="mb-2">All ships placed! Ready for battle!</div>
-                <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                <button
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                  onClick={handleReadyButtonClick}
+                >
                   READY
                 </button>
               </div>

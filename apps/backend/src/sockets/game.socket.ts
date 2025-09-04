@@ -25,4 +25,12 @@ export function registerGameHandlers(io: Server, socket: Socket) {
     const result = gameService.joinGame(gameId, playerId);
     io.to(gameId).emit("playerJoined", { playerId: socket.id });
   });
+
+  // Player joins a game room
+  socket.on("placeShips", ({ playerId, ships }) => {
+    // socket.join(gameId);
+    const result = gameService.placeShips(playerId, ships);
+    console.log("ships placed in the database");
+    io.to(playerId).emit("shipsPlaces", { playerId });
+  });
 }

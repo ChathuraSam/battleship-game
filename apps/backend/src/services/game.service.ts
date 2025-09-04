@@ -126,6 +126,12 @@ export class GameService {
     }
   }
 
+  async placeShips(playerId: string, shipData: object) {
+    console.log(`Received ship data for player: ${playerId}`);
+    console.log("shipData:", shipData);
+    this.gameRepo.updatePlayerGame(playerId, shipData);
+  }
+
   async getGameState(gameId: string) {
     return this.gameRepo.getGameState(gameId);
   }

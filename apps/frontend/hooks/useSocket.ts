@@ -45,5 +45,14 @@ export default function useSocket(
     socket.emit("joinGame", { gameId, playerId });
   };
 
-  return { makeMove, joinGame };
+  const placeShips = (playerId: string, ships: object) => {
+    console.log(`Player ${playerId} ship data: ${ships}`);
+    if (!socket) {
+      console.warn("Socket not connected yet, cannot make move");
+      return;
+    }
+    socket.emit("placeShips", { playerId, ships });
+  };
+
+  return { makeMove, joinGame, placeShips };
 }
