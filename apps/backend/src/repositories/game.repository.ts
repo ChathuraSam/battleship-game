@@ -28,40 +28,56 @@ export class GameRepository {
     });
   }
 
-  async createGame(hostUserId: string) {
-    return prisma.game.create({
-      data: {
-        status: "WAITING",
-        players: {
-          create: { username: hostUserId },
-        },
-      },
-      include: { players: true },
-    });
-  }
+  // async createGame(hostUserId: string) {
+  //   return prisma.game.create({
+  //     data: {
+  //       status: "WAITING",
+  //       players: {
+  //         create: { id: hostUserId },
+  //       },
+  //     },
+  //     include: { players: true },
+  //   });
+  // }
 
-  async joinGame(gameId: string, userId: string) {
+  async joinGame(gameId: string, playerId: string) {
     return prisma.player.create({
-      data: { username: userId, id: userId },
+      data: { id: playerId, gameId: gameId },
     });
   }
 
-  async recordMove(
+  async createPlayerInGame(
     gameId: string,
     playerId: string,
-    x: number,
-    y: number,
-    hit: boolean
+    isHost: boolean,
+    board: object
   ) {
-    return prisma.move.create({
-      data: { gameId, playerId, x, y, hit },
+    return prisma.player.create({
+      data: {
+        id: playerId,
+        gameId: gameId,
+        isHost: isHost,
+        board: board,
+      },
     });
   }
 
+  // async recordMove(
+  //   gameId: string,
+  //   playerId: string,
+  //   x: number,
+  //   y: number,
+  //   hit: boolean
+  // ) {
+  //   return prisma.move.create({
+  //     data: { gameId, playerId, x, y, hit },
+  //   });
+  // }
+
   async getGameState(gameId: string) {
-    return prisma.game.findUnique({
+    return prisma.player.findUnique({
       where: { id: gameId },
-      include: { players: { include: { game: true } }, moves: true },
+      // include: { players: { include: { game: true } }, moves: true },
     });
   }
 }

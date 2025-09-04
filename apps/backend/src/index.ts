@@ -40,11 +40,11 @@ io.on("connection", (socket: Socket) => {
   // Register game-related events
   registerGameHandlers(io, socket);
 
-  socket.on("joinGame", (gameId: string) => {
-    socket.join(gameId);
-    console.log(`User ${socket.id} joined game ${gameId}`);
-    socket.to(gameId).emit("playerJoined", { playerId: socket.id });
-  });
+  // socket.on("joinGame", (gameId: string) => {
+  //   socket.join(gameId);
+  //   console.log(`User ${socket.id} joined game ${gameId}`);
+  //   socket.to(gameId).emit("playerJoined", { playerId: socket.id });
+  // });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);

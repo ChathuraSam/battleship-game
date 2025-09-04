@@ -20,8 +20,9 @@ export function registerGameHandlers(io: Server, socket: Socket) {
   });
 
   // Player joins a game room
-  socket.on("joinGame", ({ gameId }) => {
+  socket.on("joinGame", ({ gameId, playerId }) => {
     socket.join(gameId);
+    const result = gameService.joinGame(gameId, playerId);
     io.to(gameId).emit("playerJoined", { playerId: socket.id });
   });
 }
