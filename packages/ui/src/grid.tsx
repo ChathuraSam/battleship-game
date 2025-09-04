@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface GridProps {
   className?: string;
@@ -17,6 +17,8 @@ interface GridProps {
     shipCells: Array<{ row: number; col: number }>
   ) => void;
   mode?: "ship-placement" | "targeting"; // New prop to differentiate grid modes
+  hits?: Array<{ row: number; col: number }>; // Hit positions from backend
+  misses?: Array<{ row: number; col: number }>; // Miss positions from backend
 }
 
 interface CellState {
@@ -24,6 +26,8 @@ interface CellState {
   shipType?: "battleship" | "destroyer";
   shipId?: string;
   isTargeted?: boolean; // New property for enemy grid targeting
+  isHit?: boolean; // New property for hits
+  isMiss?: boolean; // New property for misses
 }
 
 export const Grid = ({
@@ -35,6 +39,8 @@ export const Grid = ({
   onShipPlacement,
   onShipRemoval,
   mode = "ship-placement", // Default to ship placement mode
+  hits = [],
+  misses = [],
 }: GridProps) => {
   const [cellStates, setCellStates] = useState<CellState[][]>(() =>
     Array(size)
@@ -45,6 +51,42 @@ export const Grid = ({
           .map(() => ({ isSelected: false }))
       )
   );
+
+  // Update cell states when hits or misses change
+  useEffect(() => {
+    setCellStates((prevStates) => {
+      const newStates = prevStates.map((row) =>
+        row.map((cell) => ({ ...cell, isHit: false, isMiss: false }))
+      );
+
+      // Mark hits
+      hits.forEach((hit) => {
+        if (hit.row >= 0 && hit.row < size && hit.col >= 0 && hit.col < size) {
+          const cell = newStates[hit.row]?.[hit.col];
+          if (cell) {
+            cell.isHit = true;
+          }
+        }
+      });
+
+      // Mark misses
+      misses.forEach((miss) => {
+        if (
+          miss.row >= 0 &&
+          miss.row < size &&
+          miss.col >= 0 &&
+          miss.col < size
+        ) {
+          const cell = newStates[miss.row]?.[miss.col];
+          if (cell) {
+            cell.isMiss = true;
+          }
+        }
+      });
+
+      return newStates;
+    });
+  }, [hits, misses, size]);
 
   const getShipLength = (type: string) => {
     return type === "battleship" ? 4 : 3;
@@ -231,7 +273,17 @@ export const Grid = ({
     let classes =
       "w-full h-full cursor-pointer flex items-center justify-center text-xs font-bold border-2 border-gray-600";
 
-    // Handle targeting mode (enemy grid)
+    // Priority 1: Handle hits and misses (highest priority)
+    if (cell.isHit) {
+      classes += " bg-red-600 text-white"; // Red for hits
+      return classes;
+    }
+    if (cell.isMiss) {
+      classes += " bg-gray-400 text-white"; // Gray for misses
+      return classes;
+    }
+
+    // Priority 2: Handle targeting mode (enemy grid)
     if (mode === "targeting") {
       if (cell.isTargeted) {
         classes += " bg-yellow-400 text-black"; // Yellow for targeted
@@ -241,7 +293,7 @@ export const Grid = ({
       return classes;
     }
 
-    // Handle ship placement mode (player grid)
+    // Priority 3: Handle ship placement mode (player grid)
     if (cell.isSelected) {
       if (cell.shipType === "battleship") {
         classes += " bg-green-600 text-white"; // Green for battleship
@@ -260,13 +312,13 @@ export const Grid = ({
   return (
     <div className={`inline-block ${className}`}>
       <div
-        className="grid border-4 border-black bg-gray-800 p-1"
+        className="grid"
         style={{
           gridTemplateColumns: `repeat(${size}, 1fr)`,
           gridTemplateRows: `repeat(${size}, 1fr)`,
           width: "320px",
           height: "320px",
-          gap: "2px",
+          // gap: "2px",
         }}
       >
         {cellStates.map((row, rowIndex) =>
@@ -279,6 +331,11 @@ export const Grid = ({
               style={{
                 minHeight: "25px",
                 minWidth: "25px",
+                backgroundColor: cell.isHit
+                  ? "red"
+                  : cell.isMiss
+                    ? "#545454ff"
+                    : "",
               }}
             >
               {mode === "targeting" && cell.isTargeted ? "●" : ""}

@@ -47,10 +47,63 @@ export default function Home() {
     { x: number; y: number; from: "me" | "opponent" }[]
   >([]);
 
+  // State to track hits and misses on opponent's board (your attacks)
+  const [opponentHits, setOpponentHits] = useState<
+    Array<{ row: number; col: number }>
+  >([]);
+  const [opponentMisses, setOpponentMisses] = useState<
+    Array<{ row: number; col: number }>
+  >([]);
+
+  // State to track hits and misses on your board (opponent's attacks)
+  const [myHits, setMyHits] = useState<Array<{ row: number; col: number }>>([]);
+  const [myMisses, setMyMisses] = useState<Array<{ row: number; col: number }>>(
+    []
+  );
+
   const { makeMove, joinGame, placeShips } = useSocket(
     playerId as string,
+    // onOpponentMove - when opponent attacks your board
     (move) => {
       setMoves((prev) => [...prev, { ...move, from: "opponent" }]);
+    },
+    // onMoveResult - when you get result of your attack or opponent's attack
+    (result) => {
+      console.log("Move result received:", result);
+
+      if (result.attackingPlayerId === playerId) {
+        // Your attack result - update opponent's board
+        const { coordinates, hit } = result;
+        const coord = { row: coordinates[0], col: coordinates[1] };
+
+        if (hit) {
+          setOpponentHits((prev) => [...prev, coord]);
+        } else {
+          setOpponentMisses((prev) => [...prev, coord]);
+        }
+      } else {
+        // Opponent's attack on your board
+        const { coordinates, hit } = result;
+        const coord = { row: coordinates[0], col: coordinates[1] };
+
+        if (hit) {
+          setMyHits((prev) => [...prev, coord]);
+        } else {
+          setMyMisses((prev) => [...prev, coord]);
+        }
+      }
+    },
+    // onGameOver
+    (gameOverResult) => {
+      console.log("Game over:", gameOverResult);
+      alert(
+        `Game Over! Winner: ${gameOverResult.winner === playerId ? "You" : "Opponent"}`
+      );
+    },
+    // onError
+    (error) => {
+      console.error("Game error:", error);
+      alert(`Error: ${error.message}`);
     }
   );
 
@@ -193,6 +246,12 @@ export default function Home() {
       destroyer1: [],
       destroyer2: [],
     });
+    // Clear hits and misses
+    setOpponentHits([]);
+    setOpponentMisses([]);
+    setMyHits([]);
+    setMyMisses([]);
+    setMoves([]);
     // Force grid reset by key change would be ideal, but for now this works
     window.location.reload();
   };
@@ -387,6 +446,8 @@ export default function Home() {
               orientation={selectedOrientationType}
               onShipPlacement={handleShipPlacement}
               onShipRemoval={handleShipRemoval}
+              hits={myHits}
+              misses={myMisses}
               onCellClick={(row, col, isSelected) => {
                 console.log(
                   `Player Grid - Cell ${row + 1}-${col + 1} ${isSelected ? "selected" : "deselected"}`
@@ -407,6 +468,8 @@ export default function Home() {
             <Grid
               mode="targeting"
               className="border-2 border-gray-400"
+              hits={opponentHits}
+              misses={opponentMisses}
               onCellClick={(row, col, isTargeted) => {
                 console.log(
                   `Enemy Grid - Cell ${row + 1}-${col + 1} ${isTargeted ? "targeted" : "untargeted"}`
