@@ -2,7 +2,7 @@
 
 import { Button } from "@repo/ui/button";
 import { Grid } from "@repo/ui/grid";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { socket } from "../socket";
 import useSocket from "../hooks/useSocket";
 
@@ -36,11 +36,11 @@ export default function Home() {
     { x: number; y: number; from: "me" | "opponent" }[]
   >([]);
 
-  const { makeMove } = useSocket(playerId as string, (move) => {
+  const { makeMove, joinGame } = useSocket(playerId as string, (move) => {
     setMoves((prev) => [...prev, { ...move, from: "opponent" }]);
   });
 
-  const handleClick = ({ row, col }: { row: number; col: number }) => {
+  const handleCellClick = ({ row, col }: { row: number; col: number }) => {
     console.log("*** handle click run");
     const x = row;
     const y = col;
@@ -50,6 +50,7 @@ export default function Home() {
 
   const handleJoinGame = () => {
     if (playerId.trim() && gameId.trim()) {
+      joinGame(gameId, playerId);
       setIsGameStarted(true);
     } else {
       alert("Please enter both Player ID and Game ID");
@@ -316,7 +317,7 @@ export default function Home() {
                 console.log(
                   `Enemy Grid - Cell ${row + 1}-${col + 1} ${isTargeted ? "targeted" : "untargeted"}`
                 );
-                handleClick({ row, col });
+                handleCellClick({ row, col });
                 // Update shots counter
                 if (isTargeted) {
                   setShotsFired((prev) => prev + 1);

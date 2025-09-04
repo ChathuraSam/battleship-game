@@ -17,12 +17,6 @@ export default function useSocket(
   useEffect(() => {
     if (!socket) return;
 
-    socket.emit("joinGame", playerId);
-
-    socket.on("playerJoined", (data) => {
-      console.log("Another player joined:", data);
-    });
-
     socket.on("opponentMove", (move: Move) => {
       if (onOpponentMove) onOpponentMove(move);
     });
@@ -42,5 +36,14 @@ export default function useSocket(
     socket.emit("makeMove", { playerId, x, y });
   };
 
-  return { makeMove };
+  const joinGame = (gameId: string, playerId: string) => {
+    console.log(`Player ${playerId} joining gameId ${gameId}`);
+    if (!socket) {
+      console.warn("Socket not connected yet, cannot make move");
+      return;
+    }
+    socket.emit("joinGame", { gameId, playerId });
+  };
+
+  return { makeMove, joinGame };
 }
