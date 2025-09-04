@@ -62,6 +62,44 @@ export class GameRepository {
     });
   }
 
+  async updatePlayerGame(playerId: string, ships: object) {
+    try {
+      // First, get the current board data
+      const currentPlayer = await prisma.player.findUnique({
+        where: { id: playerId },
+        select: { board: true },
+      });
+
+      if (!currentPlayer) {
+        throw new Error(`Player with ID ${playerId} not found`);
+      }
+
+      // Get existing board or create default structure
+      const currentBoard = (currentPlayer.board as any) || {
+        ships: [],
+        hits: [],
+        misses: [],
+      };
+
+      // Update the ships in the board
+      const updatedBoard = {
+        ...currentBoard,
+        ships: ships,
+      };
+
+      // Update the player's board in the database
+      return await prisma.player.update({
+        where: { id: playerId },
+        data: { board: updatedBoard },
+      });
+    } catch (error) {
+      console.error(
+        `Error updating player game: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+      throw error;
+    }
+  }
+
   // async recordMove(
   //   gameId: string,
   //   playerId: string,
