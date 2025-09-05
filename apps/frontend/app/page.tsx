@@ -3,10 +3,13 @@
 import { Button } from "@repo/ui/button";
 import { Grid } from "@repo/ui/grid";
 import { useState } from "react";
+import React from "react";
 import { socket } from "../socket";
 import useSocket from "../hooks/useSocket";
 
 export default function Home() {
+  // Track whose turn it is
+  const [turnPlayerId, setTurnPlayerId] = useState<string | null>(null);
   const [selectedShipType, setSelectedShipType] = useState<
     "battleship" | "destroyer"
   >("battleship");
@@ -63,19 +66,17 @@ export default function Home() {
 
   const { makeMove, joinGame, placeShips } = useSocket(
     playerId as string,
-    // onOpponentMove - when opponent attacks your board
+    // onOpponentMove
     (move) => {
       setMoves((prev) => [...prev, { ...move, from: "opponent" }]);
     },
-    // onMoveResult - when you get result of your attack or opponent's attack
+    // onMoveResult
     (result) => {
       console.log("Move result received:", result);
-
       if (result.attackingPlayerId === playerId) {
         // Your attack result - update opponent's board
         const { coordinates, hit } = result;
         const coord = { row: coordinates[0], col: coordinates[1] };
-
         if (hit) {
           setOpponentHits((prev) => [...prev, coord]);
         } else {
@@ -85,7 +86,6 @@ export default function Home() {
         // Opponent's attack on your board
         const { coordinates, hit } = result;
         const coord = { row: coordinates[0], col: coordinates[1] };
-
         if (hit) {
           setMyHits((prev) => [...prev, coord]);
         } else {
@@ -106,6 +106,17 @@ export default function Home() {
       alert(`Error: ${error.message}`);
     }
   );
+  // Listen for turnPlayerId updates from socket
+  React.useEffect(() => {
+    if (!socket) return;
+    const handler = (data: { turnPlayerId: string }) => {
+      setTurnPlayerId(data.turnPlayerId);
+    };
+    socket.on("turnPlayerId", handler);
+    return () => {
+      socket.off("turnPlayerId", handler);
+    };
+  }, [socket]);
 
   const handleCellClick = ({ row, col }: { row: number; col: number }) => {
     console.log("*** handle click run");
@@ -260,9 +271,10 @@ export default function Home() {
     noOfBattleshipsRemain === 0 && noOfDestroyersRemain === 0;
 
   if (!isGameStarted) {
+    console.log({ turnPlayerId, playerId });
     return (
       <div style={{ padding: "20px", maxWidth: "400px", margin: "0 auto" }}>
-        <h1>Join Battleship Game</h1>
+        <h1>Battleship Game</h1>
 
         <div style={{ marginBottom: "15px" }}>
           <label
@@ -298,30 +310,71 @@ export default function Home() {
             type="text"
             value={gameId}
             onChange={(e) => setGameId(e.target.value)}
-            placeholder="Enter game ID"
+            placeholder="Enter game ID or click Create Game"
             style={{
               width: "100%",
               padding: "8px",
               border: "1px solid #ccc",
               borderRadius: "4px",
             }}
+            readOnly={isGameStarted}
           />
         </div>
 
-        <button
-          onClick={handleJoinGame}
-          style={{
-            width: "100%",
-            padding: "10px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Join Game
-        </button>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+          <button
+            onClick={async () => {
+              // Call REST API to create game
+              try {
+                const res = await fetch(
+                  "http://localhost:3001/api/game/create-db",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ playerId }),
+                  }
+                );
+                const data = await res.json();
+                if (data.success && data.gameId) {
+                  setGameId(data.gameId);
+                  alert(`Game created! Share this Game ID: ${data.gameId}`);
+                  setTurnPlayerId(playerId);
+                } else {
+                  alert("Failed to create game");
+                }
+              } catch (err) {
+                alert("Error creating game");
+              }
+            }}
+            style={{
+              flex: 1,
+              padding: "10px",
+              backgroundColor: "#28a745",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Create Game
+          </button>
+          <button
+            onClick={handleJoinGame}
+            style={{
+              flex: 1,
+              padding: "10px",
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Join Game
+          </button>
+        </div>
       </div>
     );
   }
@@ -465,24 +518,49 @@ export default function Home() {
               Shots fired: {shotsFired}
             </div>
 
-            <Grid
-              mode="targeting"
-              className="border-2 border-gray-400"
-              hits={opponentHits}
-              misses={opponentMisses}
-              onCellClick={(row, col, isTargeted) => {
-                console.log(
-                  `Enemy Grid - Cell ${row + 1}-${col + 1} ${isTargeted ? "targeted" : "untargeted"}`
-                );
-                handleCellClick({ row, col });
-                // Update shots counter
-                if (isTargeted) {
-                  setShotsFired((prev) => prev + 1);
-                } else {
-                  setShotsFired((prev) => Math.max(0, prev - 1));
-                }
-              }}
-            />
+            <div style={{ position: "relative" }}>
+              <Grid
+                mode="targeting"
+                className="border-2 border-gray-400"
+                hits={opponentHits}
+                misses={opponentMisses}
+                onCellClick={(row, col, isTargeted) => {
+                  if (turnPlayerId !== playerId) {
+                    // Not your turn, ignore click
+                    return;
+                  }
+                  console.log(
+                    `Enemy Grid - Cell ${row + 1}-${col + 1} ${isTargeted ? "targeted" : "untargeted"}`
+                  );
+                  handleCellClick({ row, col });
+                  // Update shots counter
+                  if (isTargeted) {
+                    setShotsFired((prev) => prev + 1);
+                  } else {
+                    setShotsFired((prev) => Math.max(0, prev - 1));
+                  }
+                }}
+              />
+              {turnPlayerId !== playerId && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    background: "rgba(255,255,255,0.7)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 10,
+                  }}
+                  className="text-red-500 font-bold"
+                >
+                  Waiting for opponent's move...
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </main>

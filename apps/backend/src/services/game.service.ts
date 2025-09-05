@@ -1,6 +1,14 @@
 import { GameRepository } from "../repositories/game.repository";
 
 export class GameService {
+  public async getGameById(gameId: string) {
+    return this.gameRepo.getGameById(gameId);
+  }
+  async createGameForHost(playerId: string) {
+    // Create a new game and return its ID
+    const game = await this.gameRepo.createGame(playerId);
+    return game.id;
+  }
   private gameRepo: GameRepository;
 
   constructor() {
@@ -77,6 +85,12 @@ export class GameService {
       // Persist opponent's board update
       await this.gameRepo.setBoard(opponentPlayer.id, opponentBoard);
 
+      // Switch turn to opponent
+      await this.gameRepo.setTurnPlayer(
+        attackingPlayerData.gameId,
+        opponentPlayer.id
+      );
+
       return {
         hit,
         coordinates: [x, y],
@@ -86,6 +100,7 @@ export class GameService {
         attackingPlayerId,
         opponentPlayerId: opponentPlayer.id,
         gameId: attackingPlayerData.gameId,
+        nextTurnPlayerId: opponentPlayer.id,
         opponentBoard: {
           hits: opponentBoard.hits,
           misses: opponentBoard.misses,
@@ -101,11 +116,14 @@ export class GameService {
     console.log(`Player: ${playerId} attempting to join game ${gameId}`);
 
     try {
-      // Check if game exists and get current players
+      // Check if game exists
+      const game = await this.gameRepo.getGameById(gameId);
+      if (!game) {
+        throw new Error(`Game with ID ${gameId} does not exist`);
+      }
+
+      // Get current players
       const gameState = await this.gameRepo.getGameState(gameId);
-      // if (!gameState) {
-      //   throw new Error(`Game with ID ${gameId} does not exist`);
-      // }
 
       // Check if player already exists in the game
       // const existingPlayer = gameState?.players.find((p) => p.id === playerId);

@@ -7,15 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// model Game {
-//   id        String     @id @default(uuid())
-//   status    GameStatus @default(WAITING)
-//   createdAt DateTime   @default(now())
-//   updatedAt DateTime   @updatedAt
+model Game {
+  id           String     @id @default(uuid())
+  status       GameStatus @default(WAITING)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  turnPlayerId String? // Player whose turn it is
 
-//   players Player[]
-//   moves   Move[]
-// }
+  players Player[]
+  moves   Move[]
+}
 
 model Player {
   id        String   @id @default(uuid())
@@ -27,20 +28,22 @@ model Player {
 
   // game Game? @relation(fields: [gameId], references: [id])
   // moves Move[]
+  Game Game?  @relation(fields: [gameId], references: [id])
+  Move Move[]
 }
 
-// model Move {
-//   id        String   @id @default(uuid())
-//   gameId    String
-//   playerId  String
-//   x         Int
-//   y         Int
-//   hit       Boolean
-//   createdAt DateTime @default(now())
+model Move {
+  id        String   @id @default(uuid())
+  gameId    String
+  playerId  String
+  x         Int
+  y         Int
+  hit       Boolean
+  createdAt DateTime @default(now())
 
-//   game   Game   @relation(fields: [gameId], references: [id])
-//   player Player @relation(fields: [playerId], references: [id])
-// }
+  game   Game   @relation(fields: [gameId], references: [id])
+  player Player @relation(fields: [playerId], references: [id])
+}
 
 enum GameStatus {
   WAITING
