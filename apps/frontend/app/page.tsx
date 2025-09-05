@@ -271,6 +271,7 @@ export default function Home() {
     noOfBattleshipsRemain === 0 && noOfDestroyersRemain === 0;
 
   if (!isGameStarted) {
+    console.log({ turnPlayerId, playerId });
     return (
       <div style={{ padding: "20px", maxWidth: "400px", margin: "0 auto" }}>
         <h1>Battleship Game</h1>
@@ -339,6 +340,7 @@ export default function Home() {
                 if (data.success && data.gameId) {
                   setGameId(data.gameId);
                   alert(`Game created! Share this Game ID: ${data.gameId}`);
+                  setTurnPlayerId(playerId);
                 } else {
                   alert("Failed to create game");
                 }
