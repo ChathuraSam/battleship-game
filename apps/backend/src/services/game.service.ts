@@ -1,6 +1,9 @@
 import { GameRepository } from "../repositories/game.repository";
 
 export class GameService {
+  public async getGameById(gameId: string) {
+    return this.gameRepo.getGameById(gameId);
+  }
   async createGameForHost(playerId: string) {
     // Create a new game and return its ID
     const game = await this.gameRepo.createGame(playerId);
@@ -82,6 +85,12 @@ export class GameService {
       // Persist opponent's board update
       await this.gameRepo.setBoard(opponentPlayer.id, opponentBoard);
 
+      // Switch turn to opponent
+      await this.gameRepo.setTurnPlayer(
+        attackingPlayerData.gameId,
+        opponentPlayer.id
+      );
+
       return {
         hit,
         coordinates: [x, y],
@@ -91,6 +100,7 @@ export class GameService {
         attackingPlayerId,
         opponentPlayerId: opponentPlayer.id,
         gameId: attackingPlayerData.gameId,
+        nextTurnPlayerId: opponentPlayer.id,
         opponentBoard: {
           hits: opponentBoard.hits,
           misses: opponentBoard.misses,

@@ -3,6 +3,12 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export class GameRepository {
+  async setTurnPlayer(gameId: string, playerId: string) {
+    return prisma.game.update({
+      where: { id: gameId },
+      data: { turnPlayerId: playerId },
+    });
+  }
   async createGame(playerId: string) {
     return prisma.game.create({
       data: {
