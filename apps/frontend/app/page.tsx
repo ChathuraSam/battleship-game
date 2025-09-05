@@ -262,7 +262,7 @@ export default function Home() {
   if (!isGameStarted) {
     return (
       <div style={{ padding: "20px", maxWidth: "400px", margin: "0 auto" }}>
-        <h1>Join Battleship Game</h1>
+        <h1>Battleship Game</h1>
 
         <div style={{ marginBottom: "15px" }}>
           <label
@@ -298,30 +298,70 @@ export default function Home() {
             type="text"
             value={gameId}
             onChange={(e) => setGameId(e.target.value)}
-            placeholder="Enter game ID"
+            placeholder="Enter game ID or click Create Game"
             style={{
               width: "100%",
               padding: "8px",
               border: "1px solid #ccc",
               borderRadius: "4px",
             }}
+            readOnly={isGameStarted}
           />
         </div>
 
-        <button
-          onClick={handleJoinGame}
-          style={{
-            width: "100%",
-            padding: "10px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          Join Game
-        </button>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
+          <button
+            onClick={async () => {
+              // Call REST API to create game
+              try {
+                const res = await fetch(
+                  "http://localhost:3001/api/game/create-db",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ playerId }),
+                  }
+                );
+                const data = await res.json();
+                if (data.success && data.gameId) {
+                  setGameId(data.gameId);
+                  alert(`Game created! Share this Game ID: ${data.gameId}`);
+                } else {
+                  alert("Failed to create game");
+                }
+              } catch (err) {
+                alert("Error creating game");
+              }
+            }}
+            style={{
+              flex: 1,
+              padding: "10px",
+              backgroundColor: "#28a745",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Create Game
+          </button>
+          <button
+            onClick={handleJoinGame}
+            style={{
+              flex: 1,
+              padding: "10px",
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            Join Game
+          </button>
+        </div>
       </div>
     );
   }

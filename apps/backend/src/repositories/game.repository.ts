@@ -3,6 +3,19 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export class GameRepository {
+  async createGame(playerId: string) {
+    return prisma.game.create({
+      data: {
+        status: "WAITING",
+        turnPlayerId: playerId,
+      },
+    });
+  }
+  async getGameById(gameId: string) {
+    return prisma.game.findUnique({
+      where: { id: gameId },
+    });
+  }
   /**
     Sample Board JSON   
 
@@ -113,9 +126,9 @@ export class GameRepository {
   // }
 
   async getGameState(gameId: string) {
-    return prisma.player.findUnique({
+    return prisma.game.findUnique({
       where: { id: gameId },
-      // include: { players: { include: { game: true } }, moves: true },
+      include: { players: true },
     });
   }
 
