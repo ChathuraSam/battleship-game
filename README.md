@@ -123,6 +123,65 @@ yarn exec turbo link
 pnpm exec turbo link
 ```
 
+# Battleship Game
+
+## Setup & Local Development
+
+### Prerequisites
+- Node.js (v18 or newer recommended)
+- npm (comes with Node.js)
+- PostgreSQL (for backend database)
+
+### 1. Install dependencies
+From the project root, run:
+```bash
+npm install
+```
+
+### 2. Configure environment variables
+- Copy `.env.example` to `.env` in both `apps/backend` and `apps/frontend` if present.
+- Update database connection string and any other required variables.
+
+### 3. Setup the database
+- Make sure PostgreSQL is running.
+- Run Prisma migrations:
+```bash
+cd apps/backend
+npx prisma migrate dev
+```
+
+### 4. Start the app
+From the project root, run:
+```bash
+npm run dev
+```
+This will start both backend and frontend servers (using Turborepo).
+
+- Backend: http://localhost:3001
+- Frontend: http://localhost:3000
+
+### 5. Access the game
+- Open http://localhost:3000 in your browser.
+- Create a game, join as a player, and play Battleship!
+
+## Project Structure
+- `apps/backend`: Node.js/Express backend, Prisma ORM, Socket.io
+- `apps/frontend`: Next.js frontend, React, Socket.io client
+- `packages/ui`: Shared UI components
+- `packages/typescript-config`, `packages/eslint-config`: Shared configs
+
+## Development Tips
+- Backend and frontend code changes are hot-reloaded.
+- Use the Prisma Studio to view/edit DB: `npx prisma studio` in `apps/backend`.
+- For troubleshooting, check logs in the terminal and browser console.
+
+## Troubleshooting
+- If you see database errors, check your `.env` and make sure PostgreSQL is running.
+- If ports are busy, kill any previous node processes or change the port in config files.
+
+---
+Enjoy playing Battleship locally!
+
 ## Useful Links
 
 Learn more about the power of Turborepo:
