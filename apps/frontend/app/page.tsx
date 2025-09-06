@@ -1,54 +1,48 @@
 "use client";
 
+import React from "react";
+import { useState } from "react";
+
 import { Button } from "@repo/ui/button";
 import { Grid } from "@repo/ui/grid";
-import { useState } from "react";
-import React from "react";
+import { Footer } from "@repo/ui";
+
 import { socket } from "../socket";
 import useSocket from "../hooks/useSocket";
 
-export default function Home() {
-  // Track whose turn it is
-  const [turnPlayerId, setTurnPlayerId] = useState<string | null>(null);
-  const [selectedShipType, setSelectedShipType] = useState<
-    "battleship" | "destroyer"
-  >("battleship");
+type ShipType = "battleship" | "destroyer";
+type ShipOrientationType = "vertical" | "horizontal";
+type PlacedShipType = {
+  battleship: Array<{ row: number; col: number }>;
+  destroyer1: Array<{ row: number; col: number }>;
+  destroyer2: Array<{ row: number; col: number }>;
+};
+type MoveType = { x: number; y: number; from: "me" | "opponent" }[];
 
-  const [selectedOrientationType, setSelectedOrientationType] = useState<
-    "vertical" | "horizontal"
-  >("vertical");
+const Home = () => {
+  const [turnPlayerId, setTurnPlayerId] = useState<string | null>(null);
+  const [selectedShipType, setSelectedShipType] =
+    useState<ShipType>("battleship");
+  const [selectedOrientationType, setSelectedOrientationType] =
+    useState<ShipOrientationType>("vertical");
 
   const [noOfBattleshipsRemain, setNoOfBattleshipsRemain] = useState<number>(1);
   const [noOfDestroyersRemain, setNoOfDestroyersRemain] = useState<number>(2);
   const [shotsFired, setShotsFired] = useState<number>(0);
 
-  // State to track all placed ships
-  const [placedShips, setPlacedShips] = useState<{
-    battleship: Array<{ row: number; col: number }>;
-    destroyer1: Array<{ row: number; col: number }>;
-    destroyer2: Array<{ row: number; col: number }>;
-  }>({
+  const [placedShips, setPlacedShips] = useState<PlacedShipType>({
     battleship: [],
     destroyer1: [],
     destroyer2: [],
   });
 
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
   const [transport, setTransport] = useState("N/A");
   const [connectionError, setConnectionError] = useState<string | null>(null);
-
-  // const player1Id = "23ff0250-0cf0-4084-b1ce-bd3aacf5628a";
-  // const player2Id = "5e7c5101-7c90-4437-b935-a225d73ea920";
-
-  const [gameId, setGameId] = useState("e5c5a429-9fb9-41f9-be67-4b04229d9792");
-  const [playerId, setPlayerId] = useState(
-    "23ff0250-0cf0-4084-b1ce-bd3aacf5628a"
-  );
-  const [isGameStarted, setIsGameStarted] = useState(false);
-
-  const [moves, setMoves] = useState<
-    { x: number; y: number; from: "me" | "opponent" }[]
-  >([]);
+  const [gameId, setGameId] = useState<string>("");
+  const [playerId, setPlayerId] = useState<string>("");
+  const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
+  const [moves, setMoves] = useState<MoveType>([]);
 
   // State to track hits and misses on opponent's board (your attacks)
   const [opponentHits, setOpponentHits] = useState<
@@ -564,9 +558,9 @@ export default function Home() {
           </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        {/* Footer content can go here */}
-      </footer>
+      <Footer />
     </div>
   );
-}
+};
+
+export default Home;
