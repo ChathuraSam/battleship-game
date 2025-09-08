@@ -389,7 +389,6 @@ export default function Home() {
         )}
       </div>
       <main className="flex flex-col gap-8 row-start-2 items-start sm:items-center">
-        <Button appName="web">Open alert</Button>
         <div className="flex flex-row gap-8 items-start justify-center flex-wrap w-full lg:flex-col lg:items-center lg:gap-4">
           <div className="flex flex-col items-center mt-8 lg:mt-4">
             <h2 className="mb-2 text-2xl text-center font-bold">Player Grid</h2>
